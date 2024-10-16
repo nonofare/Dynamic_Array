@@ -1,0 +1,5 @@
+namespace DA {
+	class DynArr {
+
+	};
+}
