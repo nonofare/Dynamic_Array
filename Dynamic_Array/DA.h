@@ -20,10 +20,7 @@ namespace DA {
 				return false;
 			}
 
-			if (copy(newArr, newSize)) {
-				remove(arr, size);
-				capacity = newSize;
-				arr = newArr;
+			if (swap(newArr, newSize)) {
 
 				return true;
 			}
@@ -34,14 +31,27 @@ namespace DA {
 			}
 		}
 
-		bool copy(T* extArr, size_t extSize) {
+		bool swap(T* extArr, size_t extSize) {
 			if (extSize < size) {
 				return false;
 			}
 
-			for (int i = 0; i < size; i++) {
-				extArr[i] = arr[i];
+			if constexpr (std::is_pointer_v<T>) {
+				for (int i = 0; i < size; i++) {
+					extArr[i] = arr[i];
+					arr[i] = nullptr;
+				}
 			}
+			else {
+				for (int i = 0; i < size; i++) {
+					extArr[i] = arr[i];
+				}
+
+				remove(arr, size);
+			}
+
+			capacity = extSize;
+			arr = extArr;
 
 			return true;
 		}
@@ -57,10 +67,7 @@ namespace DA {
 				return false;
 			}
 
-			if (copy(newArr, newSize)) {
-				remove(arr, size);
-				capacity = newSize;
-				arr = newArr;
+			if (swap(newArr, newSize)) {
 
 				return true;
 			}
@@ -75,13 +82,13 @@ namespace DA {
 			if (extArr == nullptr) {
 				return false;
 			}
-			/*
+
 			if constexpr (std::is_pointer_v<T>) {
 				for (int i = 0; i < extSize; i++) {
 					delete extArr[i];
 				}
 			}
-			*/
+
 			delete[] arr;
 			arr = nullptr;
 
