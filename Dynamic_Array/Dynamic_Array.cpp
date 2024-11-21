@@ -18,8 +18,6 @@ bool some_objects_cmp(some_object* so1, some_object* so2) {
 
 int main()
 {
-	srand(time(NULL));
-
 	const int MAX_ORDER = 6;
 	const int LETTES_SIZE = 26;
 	const char LETTERS[LETTES_SIZE] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
@@ -33,6 +31,7 @@ int main()
 
 	std::cout << "--------------------------------" << std::endl;
 	std::cout << "Pushing phase: " << std::endl;
+
 	int n = pow(10, MAX_ORDER);
 	double max_time_per_element = 0.0;
 
