@@ -7,169 +7,169 @@ namespace DA {
 	class DynArr {
 		const int FACTOR = 2;
 
-		T* arr_MAIN;
-		size_t size_MAIN;
-		size_t capacity_MAIN;
+		T* arr;
+		size_t size;
+		size_t capacity;
 
 		bool ExpandArray() {
-			size_t size = capacity_MAIN * FACTOR;
-			T* arr = nullptr;
+			size_t new_size = capacity * FACTOR;
+			T* new_arr = nullptr;
 
 			try {
-				arr = new T[size];
+				new_arr = new T[new_size];
 			}
 			catch (std::bad_alloc&) {
 				return false;
 			}
 
-			if (TransferMainArray(arr, size)) {
+			if (TransferMainArray(new_arr, new_size)) {
 				return true;
 			}
 			else {
-				delete[] arr;
+				delete[] new_arr;
 				return false;
 			}
 		}
 
 		bool DecreaseArray() {
-			size_t size = capacity_MAIN / FACTOR;
-			T* arr = nullptr;
+			size_t new_size = capacity / FACTOR;
+			T* new_arr = nullptr;
 
 			try {
-				arr = new T[size];
+				new_arr = new T[new_size];
 			}
 			catch (std::bad_alloc&) {
 				return false;
 			}
 
-			if (TransferMainArray(arr, size)) {
+			if (TransferMainArray(new_arr, new_size)) {
 				return true;
 			}
 			else {
-				delete[] arr;
+				delete[] new_arr;
 				return false;
 			}
 		}
 
-		bool TransferMainArray(T* arr, size_t size) {
-			if (!arr || size < size_MAIN) {
-				return false;
-			}
-
-			if constexpr (std::is_pointer_v<T>) {
-				for (int i = 0; i < size_MAIN; i++) {
-					arr[i] = arr_MAIN[i];
-					arr_MAIN[i] = nullptr;
-				}
-			}
-			else {
-				for (int i = 0; i < size_MAIN; i++) {
-					arr[i] = arr_MAIN[i];
-				}
-
-				RemoveArray(arr_MAIN, size_MAIN);
-			}
-
-			capacity_MAIN = size;
-			arr_MAIN = arr;
-
-			return true;
-		}
-
-		bool RemoveArray(T* arr, size_t size) {
-			if (!arr || size < 0) {
+		bool TransferMainArray(T* in_arr, size_t in_size) {
+			if (!in_arr || in_size < size) {
 				return false;
 			}
 
 			if constexpr (std::is_pointer_v<T>) {
 				for (int i = 0; i < size; i++) {
-					delete arr[i];
+					in_arr[i] = arr[i];
+					arr[i] = nullptr;
+				}
+			}
+			else {
+				for (int i = 0; i < size; i++) {
+					in_arr[i] = arr[i];
+				}
+
+				RemoveArray(arr, size);
+			}
+
+			capacity = in_size;
+			arr = in_arr;
+
+			return true;
+		}
+
+		bool RemoveArray(T* in_arr, size_t in_size) {
+			if (!in_arr || in_size < 0) {
+				return false;
+			}
+
+			if constexpr (std::is_pointer_v<T>) {
+				for (int i = 0; i < in_size; i++) {
+					delete in_arr[i];
 				}
 			}
 
-			delete[] arr;
-			arr = nullptr;
+			delete[] in_arr;
+			in_arr = nullptr;
 
 			return true;
 		}
 
 	public:
 		DynArr() {
-			size_MAIN = 0;
-			capacity_MAIN = 1;
-			arr_MAIN = new T[capacity_MAIN];
+			size = 0;
+			capacity = 1;
+			arr = new T[capacity];
 		}
 
 		~DynArr() {
-			RemoveArray(arr_MAIN, size_MAIN);
+			RemoveArray(arr, size);
 		}
 
 		size_t Size() const {
-			return size_MAIN;
+			return size;
 		}
 
 		bool IsEmpty() const {
-			return size_MAIN == 0;
+			return size == 0;
 		}
 
 		bool Push(T data) {
-			if (size_MAIN == capacity_MAIN) {
+			if (size == capacity) {
 				if (!ExpandArray()) {
 					return false;
 				}
 			}
 
-			arr_MAIN[size_MAIN] = data;
-			size_MAIN++;
+			arr[size] = data;
+			size++;
 
 			return true;
 		}
 
-		bool Pop(size_t index = size_MAIN - 1) {
-			if (size_MAIN == 0 || index >= size_MAIN) {
+		bool Pop(size_t index = size - 1) {
+			if (size == 0 || index >= size) {
 				return false;
 			}
 
-			if (size_MAIN == capacity_MAIN / FACTOR) {
+			if (size == capacity / FACTOR) {
 				if (!DecreaseArray()) {
 					return false;
 				}
 			}
 
-			for (size_t i = index; i < size_MAIN - 1; i++) {
-				arr_MAIN[i] = arr_MAIN[i + 1];
+			for (size_t i = index; i < size - 1; i++) {
+				arr[i] = arr[i + 1];
 			}
-			size_MAIN--;
+			size--;
 
 			return true;
 		}
 
 		void Erase() {
-			RemoveArray(arr_MAIN, size_MAIN);
-			size_MAIN = 0;
-			capacity_MAIN = 1;
-			arr_MAIN = new T[capacity_MAIN];
+			RemoveArray(arr, size);
+			size = 0;
+			capacity = 1;
+			arr = new T[capacity];
 		}
 
 		bool Sort(bool(*cmp)(T, T)) {
 			if (cmp) {
-				for (int i = 0; i < size_MAIN - 1; i++) {
-					for (int j = 0; j < size_MAIN - i - 1; j++) {
-						if (cmp(arr_MAIN[j], arr_MAIN[j + 1])) {
-							T temp = arr_MAIN[j];
-							arr_MAIN[j] = arr_MAIN[j + 1];
-							arr_MAIN[j + 1] = temp;
+				for (int i = 0; i < size - 1; i++) {
+					for (int j = 0; j < size - i - 1; j++) {
+						if (cmp(arr[j], arr[j + 1])) {
+							T temp = arr[j];
+							arr[j] = arr[j + 1];
+							arr[j + 1] = temp;
 						}
 					}
 				}
 			}
 			else if constexpr (std::is_arithmetic_v<T>) {
-				for (int i = 0; i < size_MAIN - 1; i++) {
-					for (int j = 0; j < size_MAIN - i - 1; j++) {
-						if (arr_MAIN[j] > arr_MAIN[j + 1]) {
-							T temp = arr_MAIN[j];
-							arr_MAIN[j] = arr_MAIN[j + 1];
-							arr_MAIN[j + 1] = temp;
+				for (int i = 0; i < size - 1; i++) {
+					for (int j = 0; j < size - i - 1; j++) {
+						if (arr[j] > arr[j + 1]) {
+							T temp = arr[j];
+							arr[j] = arr[j + 1];
+							arr[j + 1] = temp;
 						}
 					}
 				}
@@ -182,42 +182,42 @@ namespace DA {
 		}
 
 		const T& operator[](size_t index) const {
-			if (index < 0 || index >= size_MAIN) {
+			if (index < 0 || index >= size) {
 				throw std::out_of_range("Index is out of range");
 			}
 			else {
-				return arr_MAIN[index];
+				return arr[index];
 			}
 		}
 
 		T& operator[](size_t index) {
-			if (index < 0 || index >= size_MAIN) {
+			if (index < 0 || index >= size) {
 				throw std::out_of_range("Index is out of range");
 			}
 			else {
-				return arr_MAIN[index];
+				return arr[index];
 			}
 		}
 
 		std::string ToString(unsigned int limit = 0, std::string(*str)(T) = nullptr) const {
-			if (limit <= 0 || limit > size_MAIN) {
-				limit = size_MAIN;
+			if (limit <= 0 || limit > size) {
+				limit = size;
 			}
 
 			std::string text = "Dynamic Array:\n";
-			text += "Size: " + std::to_string(int(size_MAIN)) + "\n";
-			text += "Capacity: " + std::to_string(int(capacity_MAIN)) + "\n";
+			text += "Size: " + std::to_string(int(size)) + "\n";
+			text += "Capacity: " + std::to_string(int(capacity)) + "\n";
 			text += "Factor: " + std::to_string(int(FACTOR)) + "\n";
 			text += "{\n";
 			if (str) {
 				for (int i = 0; i < limit; i++) {
-					text += str(arr_MAIN[i]);
+					text += str(arr[i]);
 					text += "\n";
 				}
 			}
 			else if constexpr (std::is_arithmetic_v<T>) {
 				for (int i = 0; i < limit; i++) {
-					text += std::to_string(arr_MAIN[i]);
+					text += std::to_string(arr[i]);
 					text += "\n";
 				}
 			}
@@ -225,7 +225,7 @@ namespace DA {
 				text = "Data type is not supported and no method was provided\n";
 			}
 
-			if (limit < size_MAIN) {
+			if (limit < size) {
 				text += "[...]\n";
 			}
 
