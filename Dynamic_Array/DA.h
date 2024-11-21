@@ -1,91 +1,89 @@
+#pragma once
 #include <string>
 
 namespace DA {
 
 	template <typename T>
 	class DynArr {
-		T* arr;
-		size_t size;
-		size_t capacity;
-		const double FACTOR = 2;
+		const int FACTOR = 2;
 
-		bool expand() {
-			size_t newSize = capacity * FACTOR;
-			T* newArr = nullptr;
+		T* arr_MAIN;
+		size_t size_MAIN;
+		size_t capacity_MAIN;
+
+		bool ExpandArray() {
+			size_t size = capacity_MAIN * FACTOR;
+			T* arr = nullptr;
 
 			try {
-				newArr = new T[newSize];
+				arr = new T[size];
 			}
 			catch (std::bad_alloc&) {
 				return false;
 			}
 
-			if (swap(newArr, newSize)) {
-
+			if (TransferMainArray(arr, size)) {
 				return true;
 			}
 			else {
-				delete[] newArr;
-
+				delete[] arr;
 				return false;
 			}
 		}
 
-		bool swap(T* extArr, size_t extSize) {
-			if (extSize < size) {
+		bool DecreaseArray() {
+			size_t size = capacity_MAIN / FACTOR;
+			T* arr = nullptr;
+
+			try {
+				arr = new T[size];
+			}
+			catch (std::bad_alloc&) {
+				return false;
+			}
+
+			if (TransferMainArray(arr, size)) {
+				return true;
+			}
+			else {
+				delete[] arr;
+				return false;
+			}
+		}
+
+		bool TransferMainArray(T* arr, size_t size) {
+			if (!arr || size < size_MAIN) {
 				return false;
 			}
 
 			if constexpr (std::is_pointer_v<T>) {
-				for (int i = 0; i < size; i++) {
-					extArr[i] = arr[i];
-					arr[i] = nullptr;
+				for (int i = 0; i < size_MAIN; i++) {
+					arr[i] = arr_MAIN[i];
+					arr_MAIN[i] = nullptr;
 				}
 			}
 			else {
-				for (int i = 0; i < size; i++) {
-					extArr[i] = arr[i];
+				for (int i = 0; i < size_MAIN; i++) {
+					arr[i] = arr_MAIN[i];
 				}
 
-				remove(arr, size);
+				RemoveArray(arr_MAIN, size_MAIN);
 			}
 
-			capacity = extSize;
-			arr = extArr;
+			capacity_MAIN = size;
+			arr_MAIN = arr;
 
 			return true;
 		}
 
-		bool decrease() {
-			size_t newSize = capacity / FACTOR;
-			T* newArr = nullptr;
-
-			try {
-				newArr = new T[newSize];
-			}
-			catch (std::bad_alloc&) {
-				return false;
-			}
-
-			if (swap(newArr, newSize)) {
-
-				return true;
-			}
-			else {
-				delete[] newArr;
-
-				return false;
-			}
-		}
-
-		bool remove(T* extArr, size_t extSize) {
-			if (extArr == nullptr) {
+		bool RemoveArray(T* arr, size_t size) {
+			if (!arr || size < 0) {
 				return false;
 			}
 
 			if constexpr (std::is_pointer_v<T>) {
-				for (int i = 0; i < extSize; i++) {
-					delete extArr[i];
+				for (int i = 0; i < size; i++) {
+					delete arr[i];
 				}
 			}
 
@@ -97,158 +95,143 @@ namespace DA {
 
 	public:
 		DynArr() {
-			capacity = 1;
-			arr = new T[capacity];
-			size = 0;
+			size_MAIN = 0;
+			capacity_MAIN = 1;
+			arr_MAIN = new T[capacity_MAIN];
 		}
 
 		~DynArr() {
-			remove(arr, size);
+			RemoveArray(arr_MAIN, size_MAIN);
 		}
 
-		// Method purpose: Returns the number of elements in the array
-		// Arguments: None
-		// Returns: Size of the array
-		// Time complexity: Theta(1)
-		size_t get_size() const {
-			return size;
+		size_t Size() const {
+			return size_MAIN;
 		}
 
-		// Method purpose: Checks if the array is empty
-		// Arguments: None
-		// Returns: True if the array is empty, false otherwise
-		// Time complexity: Theta(1)
-		bool is_empty() const {
-			return size == 0;
+		bool IsEmpty() const {
+			return size_MAIN == 0;
 		}
 
-		// Method purpose: Adds a new element to the end of the array
-		// Arguments: Data(T) of a new element
-		// Returns: Void
-		// Time complexity: Theta(n) if expansion is required, Theta(1) otherwise
-		void push(T data) {
-			if (size == capacity) {
-				expand();
+		bool Push(T data) {
+			if (size_MAIN == capacity_MAIN) {
+				if (!ExpandArray()) {
+					return false;
+				}
 			}
-			arr[size] = data;
-			size++;
+
+			arr_MAIN[size_MAIN] = data;
+			size_MAIN++;
+
+			return true;
 		}
 
-		// Method purpose: Removes an element at the specified index
-		// Arguments: Index of the element
-		// Returns: Void
-		// Time complexity: Theta(n)
-		void pop(size_t index = size - 1) {
-			if (size == 0 || index >= size) {
-				throw std::out_of_range("Index is out of range");
+		bool Pop(size_t index = size_MAIN - 1) {
+			if (size_MAIN == 0 || index >= size_MAIN) {
+				return false;
 			}
 
-			if (size == capacity / FACTOR) {
-				decrease();
+			if (size_MAIN == capacity_MAIN / FACTOR) {
+				if (!DecreaseArray()) {
+					return false;
+				}
 			}
 
-			for (size_t i = index; i < size - 1; i++) {
-				arr[i] = arr[i + 1];
+			for (size_t i = index; i < size_MAIN - 1; i++) {
+				arr_MAIN[i] = arr_MAIN[i + 1];
 			}
-			size--;
+			size_MAIN--;
+
+			return true;
 		}
 
-		// Method purpose: Get access to an element by index (read-only)
-		// Arguments: Index of a wanted element
-		// Returns: Const reference to the element
-		// Time complexity: Theta(1)
-		const T& operator[](size_t index) const {
-			if (index >= size) {
-				throw std::out_of_range("Index is out of range");
-			}
-			else {
-				return arr[index];
-			}
+		void Erase() {
+			RemoveArray(arr_MAIN, size_MAIN);
+			size_MAIN = 0;
+			capacity_MAIN = 1;
+			arr_MAIN = new T[capacity_MAIN];
 		}
 
-		// Method purpose: Get access to an element by index
-		// Arguments: Index of a wanted element
-		// Returns: Reference to the element
-		// Time complexity: Theta(1)
-		T& operator[](size_t index) {
-			if (index >= size) {
-				throw std::out_of_range("Index is out of range");
-			}
-			else {
-				return arr[index];
-			}
-		}
-
-		// Method purpose: Delete all array elements
-		// Arguments: None
-		// Returns: Void
-		// Time complexity: Theta(n) if T is pointer type, Theta(1) otherwise
-		void erase() {
-			remove(arr, size);
-			size = 0;
-			capacity = 1;
-		}
-
-		// Method purpose: Get string representation of the array
-		// Arguments: Specific to_string function if needed, number of elements to show
-		// Returns: String representation of the array
-		// Time complexity: Theta(n)
-		std::string to_str(std::string(*out_to_string)(T) = nullptr, size_t element_count = 0) {
-			std::string text;
-
-			if (element_count <= 0 || element_count > size) {
-				element_count = size;
-			}
-
-			text = "Array has " + std::to_string(int(size)) + " elements:\n";
-			if (out_to_string != nullptr) {
-				for (int i = 0; i < element_count; i++) {
-					text += out_to_string(arr[i]);
+		bool Sort(bool(*cmp)(T, T)) {
+			if (cmp) {
+				for (int i = 0; i < size_MAIN - 1; i++) {
+					for (int j = 0; j < size_MAIN - i - 1; j++) {
+						if (cmp(arr_MAIN[j], arr_MAIN[j + 1])) {
+							T temp = arr_MAIN[j];
+							arr_MAIN[j] = arr_MAIN[j + 1];
+							arr_MAIN[j + 1] = temp;
+						}
+					}
 				}
 			}
 			else if constexpr (std::is_arithmetic_v<T>) {
-				for (int i = 0; i < element_count; i++) {
-					text += std::to_string(arr[i]);
+				for (int i = 0; i < size_MAIN - 1; i++) {
+					for (int j = 0; j < size_MAIN - i - 1; j++) {
+						if (arr_MAIN[j] > arr_MAIN[j + 1]) {
+							T temp = arr_MAIN[j];
+							arr_MAIN[j] = arr_MAIN[j + 1];
+							arr_MAIN[j + 1] = temp;
+						}
+					}
 				}
 			}
 			else {
-				text = "Data type is not supported and no method was provided";
+				return false;
 			}
 
-			if (element_count < size) {
+			return true;
+		}
+
+		const T& operator[](size_t index) const {
+			if (index < 0 || index >= size_MAIN) {
+				throw std::out_of_range("Index is out of range");
+			}
+			else {
+				return arr_MAIN[index];
+			}
+		}
+
+		T& operator[](size_t index) {
+			if (index < 0 || index >= size_MAIN) {
+				throw std::out_of_range("Index is out of range");
+			}
+			else {
+				return arr_MAIN[index];
+			}
+		}
+
+		std::string ToString(unsigned int limit = 0, std::string(*str)(T) = nullptr) const {
+			if (limit <= 0 || limit > size_MAIN) {
+				limit = size_MAIN;
+			}
+
+			std::string text = "Dynamic Array:\n";
+			text += "Size: " + std::to_string(int(size_MAIN)) + "\n";
+			text += "Capacity: " + std::to_string(int(capacity_MAIN)) + "\n";
+			text += "Factor: " + std::to_string(int(FACTOR)) + "\n";
+			text += "{\n";
+			if (str) {
+				for (int i = 0; i < limit; i++) {
+					text += str(arr_MAIN[i]);
+					text += "\n";
+				}
+			}
+			else if constexpr (std::is_arithmetic_v<T>) {
+				for (int i = 0; i < limit; i++) {
+					text += std::to_string(arr_MAIN[i]);
+					text += "\n";
+				}
+			}
+			else {
+				text = "Data type is not supported and no method was provided\n";
+			}
+
+			if (limit < size_MAIN) {
 				text += "[...]\n";
 			}
 
-			return text;
-		}
+			text += "}\n";
 
-		// Method purpose: Sort array elements
-		// Arguments: Custom comparator if needed (< operation is default)
-		// Returns: Void
-		// Time complexity: O(n^2)
-		void sort(bool(*cmp)(T, T)) {
-			if (cmp != nullptr) {
-				for (int i = 0; i < size - 1; i++) {
-					for (int j = 0; j < size - i - 1; j++) {
-						if (cmp(arr[j], arr[j + 1])) {
-							T temp = arr[j];
-							arr[j] = arr[j + 1];
-							arr[j + 1] = temp;
-						}
-					}
-				}
-			}
-			else {
-				for (int i = 0; i < size - 1; i++) {
-					for (int j = 0; j < size - i - 1; j++) {
-						if (arr[j] > arr[j + 1]) {
-							T temp = arr[j];
-							arr[j] = arr[j + 1];
-							arr[j + 1] = temp;
-						}
-					}
-				}
-			}
+			return text;
 		}
 	};
 }
