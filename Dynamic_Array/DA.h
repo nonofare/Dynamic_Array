@@ -56,19 +56,11 @@ namespace DA {
 				return false;
 			}
 
-			if constexpr (std::is_pointer_v<T>) {
-				for (int i = 0; i < size; i++) {
-					in_arr[i] = arr[i];
-					arr[i] = nullptr;
-				}
+			for (int i = 0; i < size; i++) {
+				in_arr[i] = arr[i];
 			}
-			else {
-				for (int i = 0; i < size; i++) {
-					in_arr[i] = arr[i];
-				}
 
-				RemoveArray(arr, size);
-			}
+			RemoveArray(arr);
 
 			capacity = in_size;
 			arr = in_arr;
@@ -76,15 +68,9 @@ namespace DA {
 			return true;
 		}
 
-		bool RemoveArray(T* in_arr, size_t in_size) {
-			if (!in_arr || in_size < 0) {
+		bool RemoveArray(T* in_arr) {
+			if (!in_arr) {
 				return false;
-			}
-
-			if constexpr (std::is_pointer_v<T>) {
-				for (int i = 0; i < in_size; i++) {
-					delete in_arr[i];
-				}
 			}
 
 			delete[] in_arr;
@@ -101,11 +87,15 @@ namespace DA {
 		}
 
 		~DynArr() {
-			RemoveArray(arr, size);
+			RemoveArray(arr);
 		}
 
 		size_t Size() const {
 			return size;
+		}
+
+		size_t Capacity() const {
+			return capacity;
 		}
 
 		bool IsEmpty() const {
@@ -144,11 +134,16 @@ namespace DA {
 			return true;
 		}
 
-		void Erase() {
-			RemoveArray(arr, size);
+		bool Erase() {
+			if (!RemoveArray(arr)) {
+				return false;
+			}
+
 			size = 0;
 			capacity = 1;
 			arr = new T[capacity];
+
+			return true;
 		}
 
 		bool Sort(bool(*cmp)(T, T)) {
@@ -205,9 +200,9 @@ namespace DA {
 			}
 
 			std::string text = "Dynamic Array:\n";
-			text += "Size: " + std::to_string(int(size)) + "\n";
-			text += "Capacity: " + std::to_string(int(capacity)) + "\n";
-			text += "Factor: " + std::to_string(int(FACTOR)) + "\n";
+			text += "size: " + std::to_string(int(size)) + "\n";
+			text += "capacity: " + std::to_string(int(capacity)) + "\n";
+			text += "factor: " + std::to_string(int(FACTOR)) + "\n";
 			text += "{\n";
 			if (str) {
 				for (int i = 0; i < limit; i++) {
