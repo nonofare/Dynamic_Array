@@ -20,11 +20,11 @@ namespace DA {
 				TransferMainArray(new_arr, new_capacity);
 			}
 			catch (const std::bad_alloc& ex) {
-				throw std::runtime_error("ExpandArray() -> " + std::string(ex.what()));
+				throw std::runtime_error("DA::ExpandArray() -> " + std::string(ex.what()));
 			}
 			catch (const std::exception& ex) {
 				delete[] new_arr;
-				throw std::runtime_error("ExpandArray() -> " + std::string(ex.what()));
+				throw std::runtime_error("DA::ExpandArray() -> " + std::string(ex.what()));
 			}
 		}
 
@@ -37,17 +37,17 @@ namespace DA {
 				TransferMainArray(new_arr, new_capacity);
 			}
 			catch (const std::bad_alloc& ex) {
-				throw std::runtime_error("ReduceArray() -> " + std::string(ex.what()));
+				throw std::runtime_error("DA::ReduceArray() -> " + std::string(ex.what()));
 			}
 			catch (const std::exception& ex) {
 				delete[] new_arr;
-				throw std::runtime_error("ReduceArray() -> " + std::string(ex.what()));
+				throw std::runtime_error("DA::ReduceArray() -> " + std::string(ex.what()));
 			}
 		}
 
 		void TransferMainArray(T* in_arr, size_t in_capacity) {
-			if (!in_arr) { throw std::invalid_argument("TransferMainArray() -> in_array was null"); }
-			if (in_capacity < size) { throw std::length_error("TransferMainArray() -> in_capacity is smaller than the array size"); }
+			if (!in_arr) { throw std::invalid_argument("DA::TransferMainArray(): in_array was null"); }
+			if (in_capacity < size) { throw std::length_error("DA::TransferMainArray(): in_capacity (" + std::to_string(in_capacity) + ") was smaller than the array size (" + std::to_string(int(size)) + ")"); }
 
 			for (int i = 0; i < size; i++) {
 				in_arr[i] = arr[i];
@@ -66,7 +66,7 @@ namespace DA {
 				arr = new T[capacity];
 			}
 			catch (const std::bad_alloc& ex) {
-				throw std::runtime_error("Constructor -> " + std::string(ex.what()));
+				throw std::runtime_error("DA::Constructor -> " + std::string(ex.what()));
 			}
 		}
 
@@ -88,7 +88,7 @@ namespace DA {
 					ExpandArray();
 				}
 				catch (const std::exception& ex) {
-					throw std::runtime_error("Push() -> " + std::string(ex.what()));
+					throw std::runtime_error("DA::Push() -> " + std::string(ex.what()));
 				}
 			}
 
@@ -97,14 +97,14 @@ namespace DA {
 		}
 
 		void Pop(size_t index = size - 1) {
-			if (index >= size) { throw std::length_error("Pop() -> index is greater than array size"); }
+			if (index >= size) { throw std::length_error("DA::Pop(): index (" + std::to_string(index) + ") was greater or equal to array size (" + std::to_string(int(size)) + ")"); }
 
 			if (size == capacity / FACTOR) {
 				try {
 					ReduceArray();
 				}
 				catch (const std::exception& ex) {
-					throw std::runtime_error("Pop() -> " + std::string(ex.what()));
+					throw std::runtime_error("DA::Pop() -> " + std::string(ex.what()));
 				}
 			}
 
@@ -124,15 +124,15 @@ namespace DA {
 				arr = new T[capacity];
 			}
 			catch (const std::bad_alloc& ex) {
-				throw std::runtime_error("Erase() -> " + std::string(ex.what()));
+				throw std::runtime_error("DA::Erase() -> " + std::string(ex.what()));
 			}
 		}
 
-		void Sort(bool(*cmp)(T, T)) {
-			if (cmp) {
+		void Sort(bool(*cmp_lgreater)(T, T)) {
+			if (cmp_lgreater) {
 				for (int i = 0; i < size - 1; i++) {
 					for (int j = 0; j < size - i - 1; j++) {
-						if (cmp(arr[j], arr[j + 1])) {
+						if (cmp_lgreater(arr[j], arr[j + 1])) {
 							T temp = arr[j];
 							arr[j] = arr[j + 1];
 							arr[j + 1] = temp;
@@ -152,23 +152,23 @@ namespace DA {
 				}
 			}
 			else {
-				throw std::runtime_error("Sort() -> T is not arithmetic and no cmp was provided");
+				throw std::runtime_error("DA::Sort(): T was not arithmetic and no cmp was provided");
 			}
 		}
 
 		const T& operator[](size_t index) const {
-			if (index < 0 || index >= size) { throw std::out_of_range("Operator[] -> index is out of range"); }
+			if (index >= size) { throw std::out_of_range("DA::Operator[]: index (" + std::to_string(index) + ") was greater or equal to array size (" + std::to_string(int(size)) + ")"); }
 			
 			return arr[index];
 		}
 
 		T& operator[](size_t index) {
-			if (index < 0 || index >= size) { throw std::out_of_range("Operator[] -> index is out of range\n"); }
+			if (index >= size) { throw std::out_of_range("DA::Operator[]: index (" + std::to_string(index) + ") was greater or equal to array size (" + std::to_string(int(size)) + ")"); }
 
 			return arr[index];
 		}
 
-		std::string ToString(unsigned int limit = 0, std::string(*str)(T) = nullptr) const {
+		std::string ToString(unsigned int limit = 0, std::string(*cmp_string)(T) = nullptr) const {
 			if (limit <= 0 || limit > size) {
 				limit = size;
 			}
@@ -178,9 +178,9 @@ namespace DA {
 			text += "capacity: " + std::to_string(int(capacity)) + "\n";
 			text += "factor: " + std::to_string(int(FACTOR)) + "\n";
 			text += "{\n";
-			if (str) {
+			if (cmp_string) {
 				for (int i = 0; i < limit; i++) {
-					text += str(arr[i]);
+					text += cmp_string(arr[i]);
 					text += "\n";
 				}
 			}
