@@ -5,89 +5,73 @@ namespace DA {
 
 	template <typename T>
 	class DynArr {
-		const int FACTOR = 2;
 
 		T* arr;
 		size_t size;
 		size_t capacity;
+		const int FACTOR = 2;
 
-		bool ExpandArray() {
-			size_t new_size = capacity * FACTOR;
+		void ExpandArray() {
+			size_t new_capacity = capacity * FACTOR;
 			T* new_arr = nullptr;
 
 			try {
-				new_arr = new T[new_size];
+				new_arr = new T[new_capacity];
+				TransferMainArray(new_arr, new_capacity);
 			}
-			catch (std::bad_alloc&) {
-				return false;
+			catch (const std::bad_alloc& ex) {
+				throw std::runtime_error("ExpandArray() -> " + std::string(ex.what()));
 			}
-
-			if (TransferMainArray(new_arr, new_size)) {
-				return true;
-			}
-			else {
+			catch (const std::exception& ex) {
 				delete[] new_arr;
-				return false;
+				throw std::runtime_error("ExpandArray() -> " + std::string(ex.what()));
 			}
 		}
 
-		bool DecreaseArray() {
-			size_t new_size = capacity / FACTOR;
+		void ReduceArray() {
+			size_t new_capacity = capacity / FACTOR;
 			T* new_arr = nullptr;
 
 			try {
-				new_arr = new T[new_size];
+				new_arr = new T[new_capacity];
+				TransferMainArray(new_arr, new_capacity);
 			}
-			catch (std::bad_alloc&) {
-				return false;
+			catch (const std::bad_alloc& ex) {
+				throw std::runtime_error("ReduceArray() -> " + std::string(ex.what()));
 			}
-
-			if (TransferMainArray(new_arr, new_size)) {
-				return true;
-			}
-			else {
+			catch (const std::exception& ex) {
 				delete[] new_arr;
-				return false;
+				throw std::runtime_error("ReduceArray() -> " + std::string(ex.what()));
 			}
 		}
 
-		bool TransferMainArray(T* in_arr, size_t in_size) {
-			if (!in_arr || in_size < size) {
-				return false;
-			}
+		void TransferMainArray(T* in_arr, size_t in_capacity) {
+			if (!in_arr) { throw std::invalid_argument("TransferMainArray() -> in_array was null"); }
+			if (in_capacity < size) { throw std::length_error("TransferMainArray() -> in_capacity is smaller than the array size"); }
 
 			for (int i = 0; i < size; i++) {
 				in_arr[i] = arr[i];
 			}
-
-			RemoveArray(arr);
-
-			capacity = in_size;
+			
+			delete[] arr;
+			capacity = in_capacity;
 			arr = in_arr;
-
-			return true;
-		}
-
-		bool RemoveArray(T* in_arr) {
-			if (!in_arr) {
-				return false;
-			}
-
-			delete[] in_arr;
-			in_arr = nullptr;
-
-			return true;
 		}
 
 	public:
 		DynArr() {
 			size = 0;
 			capacity = 1;
-			arr = new T[capacity];
+			try {
+				arr = new T[capacity];
+			}
+			catch (const std::bad_alloc& ex) {
+				throw std::runtime_error("Constructor -> " + std::string(ex.what()));
+			}
 		}
 
 		~DynArr() {
-			RemoveArray(arr);
+			delete[] arr;
 		}
 
 		size_t Size() const {
@@ -98,31 +82,29 @@ namespace DA {
 			return capacity;
 		}
 
-		bool IsEmpty() const {
-			return size == 0;
-		}
-
-		bool Push(T data) {
+		void Push(T data) {
 			if (size == capacity) {
-				if (!ExpandArray()) {
-					return false;
+				try {
+					ExpandArray();
+				}
+				catch (const std::exception& ex) {
+					throw std::runtime_error("Push() -> " + std::string(ex.what()));
 				}
 			}
 
 			arr[size] = data;
 			size++;
-
-			return true;
 		}
 
-		bool Pop(size_t index = size - 1) {
-			if (size == 0 || index >= size) {
-				return false;
-			}
+		void Pop(size_t index = size - 1) {
+			if (index >= size) { throw std::length_error("Pop() -> index is greater than array size"); }
 
 			if (size == capacity / FACTOR) {
-				if (!DecreaseArray()) {
-					return false;
+				try {
+					ReduceArray();
+				}
+				catch (const std::exception& ex) {
+					throw std::runtime_error("Pop() -> " + std::string(ex.what()));
 				}
 			}
 
@@ -130,23 +112,23 @@ namespace DA {
 				arr[i] = arr[i + 1];
 			}
 			size--;
-
-			return true;
 		}
 
-		bool Erase() {
-			if (!RemoveArray(arr)) {
-				return false;
-			}
+		void Erase() {
+			delete[] arr;
+			arr = nullptr;
 
 			size = 0;
 			capacity = 1;
-			arr = new T[capacity];
-
-			return true;
+			try {
+				arr = new T[capacity];
+			}
+			catch (const std::bad_alloc& ex) {
+				throw std::runtime_error("Erase() -> " + std::string(ex.what()));
+			}
 		}
 
-		bool Sort(bool(*cmp)(T, T)) {
+		void Sort(bool(*cmp)(T, T)) {
 			if (cmp) {
 				for (int i = 0; i < size - 1; i++) {
 					for (int j = 0; j < size - i - 1; j++) {
@@ -170,28 +152,20 @@ namespace DA {
 				}
 			}
 			else {
-				return false;
+				throw std::runtime_error("Sort() -> T is not arithmetic and no cmp was provided");
 			}
-
-			return true;
 		}
 
 		const T& operator[](size_t index) const {
-			if (index < 0 || index >= size) {
-				throw std::out_of_range("Index is out of range");
-			}
-			else {
-				return arr[index];
-			}
+			if (index < 0 || index >= size) { throw std::out_of_range("Operator[] -> index is out of range"); }
+			
+			return arr[index];
 		}
 
 		T& operator[](size_t index) {
-			if (index < 0 || index >= size) {
-				throw std::out_of_range("Index is out of range");
-			}
-			else {
-				return arr[index];
-			}
+			if (index < 0 || index >= size) { throw std::out_of_range("Operator[] -> index is out of range\n"); }
+
+			return arr[index];
 		}
 
 		std::string ToString(unsigned int limit = 0, std::string(*str)(T) = nullptr) const {
@@ -217,7 +191,7 @@ namespace DA {
 				}
 			}
 			else {
-				text = "Data type is not supported and no method was provided\n";
+				text = "T is not arithmetic and no cmp was provided\n";
 			}
 
 			if (limit < size) {

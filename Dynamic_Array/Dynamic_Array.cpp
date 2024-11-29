@@ -42,7 +42,12 @@ int main()
 		so->field_2 = LETTERS[rnd_let(dre)];
 
 		std::chrono::high_resolution_clock::time_point element_start_time = std::chrono::high_resolution_clock::now();
-		da->Push(so);
+		try {
+			da->Push(so);
+		}
+		catch (const std::exception& ex) {
+			std::cout << ex.what() << std::endl;
+		}
 		std::chrono::high_resolution_clock::time_point element_end_time = std::chrono::high_resolution_clock::now();
 
 		std::chrono::duration<double> time_per_element = element_end_time - element_start_time;
@@ -62,7 +67,12 @@ int main()
 	std::cout << "Sorting phase: " << std::endl;
 
 	start_time = std::chrono::high_resolution_clock::now();
-	da->Sort(some_objects_cmp);
+	try {
+		da->Sort(some_objects_cmp);
+	}
+	catch (const std::exception& ex) {
+		std::cout << ex.what() << std::endl;
+	}
 	end_time = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> sorting_time = end_time - start_time;
@@ -73,7 +83,12 @@ int main()
 	std::cout << "Removing phase: " << std::endl;
 
 	start_time = std::chrono::high_resolution_clock::now();
-	da->Erase();
+	try {
+		da->Erase();
+	}
+	catch (const std::exception& ex) {
+		std::cout << ex.what() << std::endl;
+	}
 	end_time = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> removing_time = end_time - start_time;
