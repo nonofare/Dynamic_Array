@@ -59,11 +59,11 @@ namespace DA {
 		}
 
 	public:
-		DynArr() {
+		DynArr(size_t in_capacity = 1) {
 			size = 0;
-			capacity = 1;
+			capacity = in_capacity;
 			try {
-				arr = new T[capacity];
+				arr = new T[capacity]{ nullptr };
 			}
 			catch (const std::bad_alloc& ex) {
 				throw std::runtime_error("DA::Constructor -> " + std::string(ex.what()));
@@ -80,6 +80,10 @@ namespace DA {
 
 		size_t Capacity() const {
 			return capacity;
+		}
+
+		const int Factor() {
+			return FACTOR;
 		}
 
 		void Push(T data) {
@@ -157,13 +161,13 @@ namespace DA {
 		}
 
 		const T& operator[](size_t index) const {
-			if (index >= size) { throw std::out_of_range("DA::Operator[]: index (" + std::to_string(index) + ") was greater or equal to array size (" + std::to_string(int(size)) + ")"); }
+			if (index >= capacity) { throw std::out_of_range("DA::Operator[]: index (" + std::to_string(index) + ") was greater or equal to array capacity (" + std::to_string(int(size)) + ")"); }
 			
 			return arr[index];
 		}
 
 		T& operator[](size_t index) {
-			if (index >= size) { throw std::out_of_range("DA::Operator[]: index (" + std::to_string(index) + ") was greater or equal to array size (" + std::to_string(int(size)) + ")"); }
+			if (index >= capacity) { throw std::out_of_range("DA::Operator[]: index (" + std::to_string(index) + ") was greater or equal to array capacity (" + std::to_string(int(size)) + ")"); }
 
 			return arr[index];
 		}
