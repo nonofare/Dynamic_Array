@@ -1,8 +1,7 @@
 # Dynamic Array Implementation in C++
 
 This project provides a C++ implementation of a Dynamic Array data structure. The implementation is templated, allowing
-it to store any data type. The dynamic array supports common operations such as insertion, deletion, indexing, and
-automatic resizing.
+it to store any data type. The dynamic array supports common operations such as insertion, deletion and indexing.
 
 ## Table of Contents
 
@@ -32,9 +31,9 @@ automatic resizing.
 
 - **Indexing:** Access elements using the `[]` operator.
 
-- **String Representation:** Convert the list to a string for easy visualization.
+- **String Representation:** Convert the list to a string for a easy visualization.
 
-- **Memory Management:** Automatically deallocates memory when the list is destroyed.
+- **Memory Management:** Automatically deallocates memory when array is destroyed.
 
 ## API Documentation
 
@@ -83,7 +82,7 @@ automatic resizing.
 
 #### Utility:
 
-- `std::string to_str(unsigned int limit = 0, std::string (*fun_str)(T) = nullptr) const`: Converts the array to a
+- `std::string to_str(unsigned int limit = 0, std::string (*fun_str)(T) = nullptr) const`: Converts array to a
   string representation.
 
 ## Example Usage
