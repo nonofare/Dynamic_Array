@@ -22,9 +22,8 @@ namespace DA {
         }
 
         void set_new_main_array(T *new_arr, const size_t new_capacity) {
-            if (!new_arr || new_capacity < size) {
-                throw std::runtime_error("Error occurred while setting new main array");
-            }
+            if (!new_arr) throw std::invalid_argument("new_arr was null");
+            if (new_capacity < size) throw std::invalid_argument("new_capacity was smaller than current capacity");
 
             for (size_t i = 0; i < size; i++) {
                 new_arr[i] = arr[i];
@@ -38,8 +37,8 @@ namespace DA {
     public:
         explicit DynArr(const size_t capacity = 1, const size_t FACTOR = 2) : size(0), capacity(capacity),
                                                                               FACTOR(FACTOR) {
-            if (capacity < 1) throw std::invalid_argument("Capacity must be >= 1.");
-            if (FACTOR <= 1) throw std::invalid_argument("FACTOR must be > 1.");
+            if (capacity < 1) throw std::invalid_argument("Capacity must be >= 1");
+            if (FACTOR <= 1) throw std::invalid_argument("FACTOR must be > 1");
             arr = new T[capacity]();
         }
 
@@ -74,15 +73,15 @@ namespace DA {
         }
 
         void push(T data) {
-            if (size == capacity) { expand(); }
+            if (size == capacity) expand();
             arr[size] = data;
             size++;
         }
 
         bool pop(const size_t index) {
-            if (index >= size) { return false; }
+            if (index >= size) return false;
 
-            if (size == capacity / FACTOR) { reduce(); }
+            if (size == capacity / FACTOR) reduce();
             for (size_t i = index; i < size - 1; i++) {
                 arr[i] = arr[i + 1];
             }
@@ -93,7 +92,7 @@ namespace DA {
 
         void clear(const bool save_capacity = false) {
             size = 0;
-            if (!save_capacity) { capacity = 1; }
+            if (!save_capacity) capacity = 1;
             delete[] arr;
             arr = new T[capacity];
         }
@@ -119,9 +118,7 @@ namespace DA {
         }
 
         std::string to_str(unsigned int limit = 0, std::string (*fun_str)(T) = nullptr) const {
-            if (limit == 0 || limit > size) {
-                limit = size;
-            }
+            if (limit == 0 || limit > size) limit = size;
 
             std::string text = "Dynamic Array:\n";
             text += "size: " + std::to_string(static_cast<int>(size)) + "\n";
@@ -142,9 +139,7 @@ namespace DA {
                 text = "T is not arithmetic and no cmp was provided\n";
             }
 
-            if (limit < size) {
-                text += "[...]\n";
-            }
+            if (limit < size) text += "[...]\n";
             text += "}\n";
 
             return text;
